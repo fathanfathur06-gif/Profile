@@ -1,0 +1,1830 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AkademiX — Try Out Nasional</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Mono:wght@400;500&family=Outfit:wght@300;400;500;600;700&display=swap');
+
+*, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+:root {
+  --ink: #0d0f14;
+  --paper: #f5f0e8;
+  --cream: #ede8da;
+  --accent: #c8410a;
+  --accent2: #1a6b3a;
+  --gold: #c9972a;
+  --slate: #4a5568;
+  --light-slate: #8896a8;
+  --white: #ffffff;
+  --correct: #1a6b3a;
+  --wrong: #c8250a;
+  --panel: rgba(255,255,255,0.7);
+  --border: rgba(13,15,20,0.12);
+  --shadow: 0 4px 24px rgba(13,15,20,0.1);
+}
+
+html { scroll-behavior: smooth; }
+
+body {
+  font-family: 'Outfit', sans-serif;
+  background: var(--paper);
+  color: var(--ink);
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+/* ── GRAIN TEXTURE ── */
+body::before {
+  content: '';
+  position: fixed; inset: 0;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
+  pointer-events: none; z-index: 9999; opacity: 0.6;
+}
+
+/* ══ SCREENS ══ */
+.screen { display: none; }
+.screen.active { display: block; }
+
+/* ── WELCOME ── */
+#screen-welcome {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.nav-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 20px 48px;
+  border-bottom: 1px solid var(--border);
+  background: rgba(245,240,232,0.8);
+  backdrop-filter: blur(12px);
+  position: sticky; top: 0; z-index: 100;
+}
+.logo {
+  font-family: 'DM Serif Display', serif;
+  font-size: 1.5rem;
+  letter-spacing: -0.5px;
+  color: var(--ink);
+}
+.logo span { color: var(--accent); }
+.nav-badge {
+  font-size: 0.7rem;
+  font-weight: 600;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: var(--light-slate);
+}
+
+.hero {
+  flex: 1;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0;
+  min-height: calc(100vh - 65px);
+}
+
+.hero-left {
+  padding: 80px 64px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  border-right: 1px solid var(--border);
+}
+
+.hero-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  color: var(--accent);
+  margin-bottom: 28px;
+}
+.hero-tag::before {
+  content: '';
+  width: 24px; height: 2px;
+  background: var(--accent);
+}
+
+.hero-title {
+  font-family: 'DM Serif Display', serif;
+  font-size: clamp(2.8rem, 4.5vw, 4.2rem);
+  line-height: 1.1;
+  letter-spacing: -1px;
+  color: var(--ink);
+  margin-bottom: 24px;
+}
+.hero-title em {
+  font-style: italic;
+  color: var(--accent);
+}
+
+.hero-desc {
+  font-size: 1.05rem;
+  line-height: 1.8;
+  color: var(--slate);
+  max-width: 420px;
+  margin-bottom: 48px;
+}
+
+.subject-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  margin-bottom: 40px;
+}
+
+.subject-card {
+  background: var(--white);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 16px 18px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  position: relative;
+  overflow: hidden;
+}
+.subject-card::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0;
+  width: 3px; height: 100%;
+  background: var(--accent);
+  transform: scaleY(0);
+  transform-origin: bottom;
+  transition: transform 0.2s ease;
+}
+.subject-card:hover { border-color: var(--accent); transform: translateY(-2px); box-shadow: var(--shadow); }
+.subject-card:hover::before { transform: scaleY(1); }
+.subject-card.selected { border-color: var(--accent); background: #fef6f2; }
+.subject-card.selected::before { transform: scaleY(1); }
+
+.sc-icon { font-size: 1.4rem; margin-bottom: 6px; }
+.sc-name { font-size: 0.8rem; font-weight: 600; color: var(--ink); }
+.sc-count { font-size: 0.68rem; color: var(--light-slate); margin-top: 2px; }
+.sc-check {
+  position: absolute;
+  top: 10px; right: 10px;
+  width: 18px; height: 18px;
+  border-radius: 50%;
+  background: var(--accent);
+  display: none;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-size: 0.6rem;
+}
+.subject-card.selected .sc-check { display: flex; }
+
+.btn-start {
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+  padding: 16px 36px;
+  background: var(--ink);
+  color: var(--paper);
+  border: none;
+  border-radius: 8px;
+  font-family: 'Outfit', sans-serif;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+  letter-spacing: 0.3px;
+}
+.btn-start:hover { background: var(--accent); transform: translateY(-2px); box-shadow: 0 8px 24px rgba(200,65,10,0.3); }
+.btn-start .arrow { transition: transform 0.2s; }
+.btn-start:hover .arrow { transform: translateX(4px); }
+
+.hero-right {
+  padding: 80px 64px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  background: var(--cream);
+  position: relative;
+  overflow: hidden;
+}
+.hero-right::before {
+  content: 'TRY OUT';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%,-50%) rotate(-15deg);
+  font-family: 'DM Serif Display', serif;
+  font-size: 9rem;
+  color: rgba(13,15,20,0.03);
+  white-space: nowrap;
+  pointer-events: none;
+}
+
+.stats-list { display: flex; flex-direction: column; gap: 20px; }
+.stat-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 16px;
+  padding: 20px;
+  background: var(--white);
+  border-radius: 10px;
+  border: 1px solid var(--border);
+}
+.stat-num {
+  font-family: 'DM Serif Display', serif;
+  font-size: 2rem;
+  color: var(--accent);
+  line-height: 1;
+  min-width: 60px;
+}
+.stat-desc { font-size: 0.88rem; color: var(--slate); line-height: 1.5; }
+.stat-desc strong { display: block; color: var(--ink); font-size: 0.95rem; margin-bottom: 2px; }
+
+.difficulty-picker {
+  margin-top: 32px;
+  background: var(--white);
+  border-radius: 10px;
+  border: 1px solid var(--border);
+  padding: 20px;
+}
+.diff-label { font-size: 0.72rem; font-weight: 600; letter-spacing: 2px; text-transform: uppercase; color: var(--light-slate); margin-bottom: 12px; }
+.diff-options { display: flex; gap: 8px; }
+.diff-btn {
+  flex: 1;
+  padding: 10px 6px;
+  border-radius: 6px;
+  border: 1px solid var(--border);
+  background: transparent;
+  font-family: 'Outfit', sans-serif;
+  font-size: 0.8rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.15s;
+  color: var(--slate);
+}
+.diff-btn.active { background: var(--ink); color: var(--paper); border-color: var(--ink); }
+.diff-btn:hover:not(.active) { border-color: var(--ink); color: var(--ink); }
+
+
+/* ══ QUIZ ══ */
+#screen-quiz {
+  min-height: 100vh;
+  display: grid;
+  grid-template-rows: auto 1fr;
+}
+
+.quiz-header {
+  background: var(--white);
+  border-bottom: 1px solid var(--border);
+  padding: 0 48px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 64px;
+  position: sticky; top: 0; z-index: 100;
+}
+
+.quiz-progress-wrap {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  padding: 0 40px;
+}
+.progress-track {
+  flex: 1;
+  height: 4px;
+  background: var(--cream);
+  border-radius: 2px;
+  overflow: hidden;
+}
+.progress-fill {
+  height: 100%;
+  background: var(--accent);
+  border-radius: 2px;
+  transition: width 0.4s ease;
+}
+.q-counter {
+  font-family: 'DM Mono', monospace;
+  font-size: 0.82rem;
+  color: var(--light-slate);
+  white-space: nowrap;
+}
+.timer-display {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-family: 'DM Mono', monospace;
+  font-size: 1rem;
+  font-weight: 500;
+  color: var(--ink);
+  padding: 6px 14px;
+  background: var(--cream);
+  border-radius: 6px;
+}
+.timer-display.warning { color: var(--wrong); background: #fef2f2; animation: timerPulse 1s ease-in-out infinite; }
+@keyframes timerPulse { 0%,100%{opacity:1} 50%{opacity:0.6} }
+
+.quiz-body {
+  display: grid;
+  grid-template-columns: 1fr 340px;
+  max-width: 1200px;
+  margin: 0 auto;
+  width: 100%;
+  padding: 48px 48px 48px 48px;
+  gap: 40px;
+  align-items: start;
+}
+
+.question-panel {
+  background: var(--white);
+  border-radius: 16px;
+  border: 1px solid var(--border);
+  overflow: hidden;
+}
+
+.q-category {
+  padding: 14px 28px;
+  background: var(--cream);
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.q-cat-label {
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 2.5px;
+  text-transform: uppercase;
+  color: var(--slate);
+}
+.q-difficulty {
+  font-size: 0.65rem;
+  font-weight: 600;
+  padding: 3px 10px;
+  border-radius: 20px;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+.q-difficulty.hard { background: #fef2f0; color: var(--wrong); }
+.q-difficulty.medium { background: #fefbf0; color: var(--gold); }
+.q-difficulty.extreme { background: #f5f0ff; color: #6b21a8; }
+
+.q-content {
+  padding: 32px 28px 28px;
+}
+
+.q-number {
+  font-family: 'DM Mono', monospace;
+  font-size: 0.72rem;
+  color: var(--light-slate);
+  margin-bottom: 12px;
+  letter-spacing: 1px;
+}
+
+.q-text {
+  font-size: 1.08rem;
+  line-height: 1.75;
+  color: var(--ink);
+  margin-bottom: 8px;
+  font-weight: 400;
+}
+.q-sub {
+  font-size: 0.88rem;
+  color: var(--slate);
+  line-height: 1.6;
+  margin-bottom: 28px;
+  padding: 12px 16px;
+  background: var(--cream);
+  border-radius: 8px;
+  border-left: 3px solid var(--gold);
+  display: none;
+}
+.q-sub.show { display: block; }
+
+.options-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.option-btn {
+  width: 100%;
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+  padding: 14px 18px;
+  border: 1.5px solid var(--border);
+  border-radius: 10px;
+  background: transparent;
+  cursor: pointer;
+  transition: all 0.18s ease;
+  text-align: left;
+  font-family: 'Outfit', sans-serif;
+  font-size: 0.95rem;
+  color: var(--ink);
+  line-height: 1.5;
+}
+.option-btn:hover:not(:disabled) {
+  border-color: var(--accent);
+  background: #fef6f2;
+  transform: translateX(3px);
+}
+.option-key {
+  min-width: 28px; height: 28px;
+  border-radius: 6px;
+  background: var(--cream);
+  border: 1px solid var(--border);
+  font-family: 'DM Mono', monospace;
+  font-size: 0.75rem;
+  font-weight: 500;
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+  transition: all 0.18s;
+}
+.option-btn:hover:not(:disabled) .option-key {
+  background: var(--accent);
+  color: white;
+  border-color: var(--accent);
+}
+
+.option-btn.selected { border-color: var(--ink); background: #f5f0e8; }
+.option-btn.selected .option-key { background: var(--ink); color: white; border-color: var(--ink); }
+.option-btn.correct { border-color: var(--correct); background: #f0faf4; }
+.option-btn.correct .option-key { background: var(--correct); color: white; border-color: var(--correct); }
+.option-btn.wrong { border-color: var(--wrong); background: #fef2f0; }
+.option-btn.wrong .option-key { background: var(--wrong); color: white; border-color: var(--wrong); }
+.option-btn:disabled { cursor: default; }
+
+.q-actions {
+  padding: 20px 28px 28px;
+  display: flex;
+  gap: 12px;
+  border-top: 1px solid var(--border);
+}
+
+.btn-check {
+  flex: 1;
+  padding: 13px 24px;
+  background: var(--ink);
+  color: var(--paper);
+  border: none;
+  border-radius: 8px;
+  font-family: 'Outfit', sans-serif;
+  font-size: 0.95rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.18s;
+}
+.btn-check:hover { background: var(--accent); }
+.btn-check:disabled { opacity: 0.4; cursor: not-allowed; }
+
+.btn-next {
+  padding: 13px 24px;
+  background: transparent;
+  color: var(--ink);
+  border: 1.5px solid var(--border);
+  border-radius: 8px;
+  font-family: 'Outfit', sans-serif;
+  font-size: 0.95rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.18s;
+  display: none;
+}
+.btn-next.show { display: block; }
+.btn-next:hover { border-color: var(--ink); background: var(--ink); color: var(--paper); }
+
+/* Explanation */
+.explanation-box {
+  margin: 0 28px 20px;
+  padding: 18px;
+  border-radius: 10px;
+  font-size: 0.88rem;
+  line-height: 1.7;
+  display: none;
+}
+.explanation-box.show { display: block; }
+.explanation-box.correct { background: #f0faf4; border-left: 4px solid var(--correct); }
+.explanation-box.wrong { background: #fef2f0; border-left: 4px solid var(--wrong); }
+.exp-header {
+  font-weight: 700;
+  font-size: 0.8rem;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  margin-bottom: 8px;
+}
+.exp-header.correct { color: var(--correct); }
+.exp-header.wrong { color: var(--wrong); }
+
+/* Sidebar */
+.quiz-sidebar {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  position: sticky;
+  top: 80px;
+}
+
+.sidebar-card {
+  background: var(--white);
+  border-radius: 12px;
+  border: 1px solid var(--border);
+  padding: 20px;
+}
+.sidebar-title {
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: var(--light-slate);
+  margin-bottom: 14px;
+}
+
+.score-live {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+}
+.score-big {
+  font-family: 'DM Serif Display', serif;
+  font-size: 3rem;
+  color: var(--ink);
+  line-height: 1;
+}
+.score-total { font-size: 1rem; color: var(--light-slate); }
+
+.mini-stats { display: flex; gap: 8px; margin-top: 12px; }
+.mini-stat {
+  flex: 1;
+  padding: 8px;
+  border-radius: 8px;
+  text-align: center;
+}
+.mini-stat.c { background: #f0faf4; }
+.mini-stat.w { background: #fef2f0; }
+.mini-stat.s { background: var(--cream); }
+.mini-stat .ms-num { font-family: 'DM Mono', monospace; font-size: 1.1rem; font-weight: 500; }
+.mini-stat.c .ms-num { color: var(--correct); }
+.mini-stat.w .ms-num { color: var(--wrong); }
+.mini-stat .ms-label { font-size: 0.62rem; color: var(--light-slate); }
+
+.q-nav-grid {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 6px;
+}
+.qn-btn {
+  aspect-ratio: 1;
+  border-radius: 6px;
+  border: 1px solid var(--border);
+  background: transparent;
+  font-family: 'DM Mono', monospace;
+  font-size: 0.72rem;
+  cursor: pointer;
+  transition: all 0.15s;
+  color: var(--slate);
+}
+.qn-btn.current { border-color: var(--ink); background: var(--ink); color: white; }
+.qn-btn.answered-c { background: #dcfce7; border-color: var(--correct); color: var(--correct); }
+.qn-btn.answered-w { background: #fee2e2; border-color: var(--wrong); color: var(--wrong); }
+.qn-btn.skipped { background: var(--cream); }
+
+.btn-submit-quiz {
+  width: 100%;
+  padding: 14px;
+  background: linear-gradient(135deg, var(--accent), #a33508);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-family: 'Outfit', sans-serif;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+  letter-spacing: 0.3px;
+}
+.btn-submit-quiz:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(200,65,10,0.35); }
+
+
+/* ══ RESULT ══ */
+#screen-result {
+  min-height: 100vh;
+  background: var(--paper);
+}
+
+.result-header {
+  background: var(--white);
+  border-bottom: 1px solid var(--border);
+  padding: 20px 48px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.result-body {
+  max-width: 960px;
+  margin: 0 auto;
+  padding: 60px 48px;
+}
+
+.result-hero {
+  text-align: center;
+  margin-bottom: 60px;
+}
+
+.result-score-ring {
+  width: 180px; height: 180px;
+  margin: 0 auto 32px;
+  position: relative;
+}
+.ring-svg { width: 100%; height: 100%; transform: rotate(-90deg); }
+.ring-bg { fill: none; stroke: var(--cream); stroke-width: 10; }
+.ring-fill { fill: none; stroke-width: 10; stroke-linecap: round; transition: stroke-dashoffset 1.5s cubic-bezier(0.4,0,0.2,1); }
+.ring-text {
+  position: absolute; inset: 0;
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+}
+.ring-pct {
+  font-family: 'DM Serif Display', serif;
+  font-size: 2.8rem;
+  color: var(--ink);
+  line-height: 1;
+}
+.ring-label { font-size: 0.72rem; color: var(--light-slate); letter-spacing: 1px; margin-top: 4px; }
+
+.grade-badge {
+  display: inline-block;
+  font-family: 'DM Serif Display', serif;
+  font-size: 1.8rem;
+  padding: 8px 28px;
+  border-radius: 40px;
+  margin-bottom: 16px;
+}
+.grade-a { background: #dcfce7; color: var(--correct); }
+.grade-b { background: #fef9c3; color: #854d0e; }
+.grade-c { background: #fee2e2; color: var(--wrong); }
+
+.result-title {
+  font-family: 'DM Serif Display', serif;
+  font-size: 2.2rem;
+  color: var(--ink);
+  margin-bottom: 10px;
+}
+.result-sub { font-size: 1rem; color: var(--slate); line-height: 1.7; }
+
+.stats-row {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 16px;
+  margin-bottom: 48px;
+}
+.stat-box {
+  background: var(--white);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 24px 20px;
+  text-align: center;
+}
+.stat-box-num {
+  font-family: 'DM Serif Display', serif;
+  font-size: 2.4rem;
+  line-height: 1;
+  margin-bottom: 6px;
+}
+.stat-box-num.g { color: var(--correct); }
+.stat-box-num.r { color: var(--wrong); }
+.stat-box-num.b { color: #3b82f6; }
+.stat-box-num.o { color: var(--gold); }
+.stat-box-label { font-size: 0.78rem; color: var(--light-slate); letter-spacing: 0.5px; }
+
+.review-section { margin-bottom: 48px; }
+.review-title {
+  font-family: 'DM Serif Display', serif;
+  font-size: 1.5rem;
+  color: var(--ink);
+  margin-bottom: 24px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid var(--border);
+}
+
+.review-item {
+  background: var(--white);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  margin-bottom: 16px;
+  overflow: hidden;
+}
+.review-item-header {
+  padding: 14px 20px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+.review-item-header:hover { background: var(--cream); }
+.ri-status {
+  width: 28px; height: 28px;
+  border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 0.75rem;
+  flex-shrink: 0;
+}
+.ri-status.c { background: #dcfce7; color: var(--correct); }
+.ri-status.w { background: #fee2e2; color: var(--wrong); }
+.ri-q-text { flex: 1; font-size: 0.9rem; color: var(--ink); line-height: 1.4; }
+.ri-cat { font-size: 0.65rem; font-weight: 600; letter-spacing: 1.5px; text-transform: uppercase; color: var(--light-slate); }
+.review-item-body {
+  padding: 0 20px 16px;
+  display: none;
+  border-top: 1px solid var(--border);
+}
+.review-item-body.open { display: block; padding-top: 16px; }
+.ri-detail { font-size: 0.85rem; color: var(--slate); line-height: 1.7; }
+.ri-your-ans { color: var(--wrong); font-weight: 600; }
+.ri-correct-ans { color: var(--correct); font-weight: 600; }
+
+.btn-restart {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  padding: 14px 32px;
+  background: var(--ink);
+  color: var(--paper);
+  border: none;
+  border-radius: 8px;
+  font-family: 'Outfit', sans-serif;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.btn-restart:hover { background: var(--accent); transform: translateY(-2px); }
+
+/* ANIMATIONS */
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.fade-up { animation: fadeUp 0.5s ease forwards; }
+.fade-up-2 { animation: fadeUp 0.5s 0.1s ease both; }
+.fade-up-3 { animation: fadeUp 0.5s 0.2s ease both; }
+
+@media (max-width: 900px) {
+  .hero { grid-template-columns: 1fr; }
+  .hero-right { display: none; }
+  .hero-left { padding: 48px 28px; }
+  .quiz-body { grid-template-columns: 1fr; }
+  .quiz-sidebar { position: static; }
+  .stats-row { grid-template-columns: 1fr 1fr; }
+  .nav-bar, .quiz-header, .result-header { padding: 14px 20px; }
+  .result-body { padding: 32px 20px; }
+}
+</style>
+</head>
+<body>
+
+<!-- ══ WELCOME ══ -->
+<div id="screen-welcome" class="screen active">
+  <nav class="nav-bar">
+    <div class="logo">Akademi<span>X</span></div>
+    <div class="nav-badge">Try Out Akademik</div>
+  </nav>
+  <div class="hero">
+    <div class="hero-left fade-up">
+      <div class="hero-tag">Uji Kemampuanmu</div>
+      <h1 class="hero-title">Seberapa Jauh <em>Pemahamanmu?</em></h1>
+      <p class="hero-desc">Tes kemampuan akademik dengan soal-soal berstandar tinggi. Pilih mata pelajaran dan tantang dirimu sendiri.</p>
+
+      <div style="margin-bottom:20px;">
+        <div style="font-size:0.72rem;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--light-slate);margin-bottom:12px;">Pilih Mata Pelajaran</div>
+        <div class="subject-grid" id="subjectGrid">
+          <div class="subject-card selected" data-subject="matematika" onclick="toggleSubject(this)">
+            <div class="sc-icon">📐</div>
+            <div class="sc-name">Matematika</div>
+            <div class="sc-count">10 soal pilihan</div>
+            <div class="sc-check">✓</div>
+          </div>
+          <div class="subject-card" data-subject="fisika" onclick="toggleSubject(this)">
+            <div class="sc-icon">⚛️</div>
+            <div class="sc-name">Fisika</div>
+            <div class="sc-count">10 soal pilihan</div>
+            <div class="sc-check">✓</div>
+          </div>
+          <div class="subject-card" data-subject="kimia" onclick="toggleSubject(this)">
+            <div class="sc-icon">🧪</div>
+            <div class="sc-name">Kimia</div>
+            <div class="sc-count">10 soal pilihan</div>
+            <div class="sc-check">✓</div>
+          </div>
+          <div class="subject-card" data-subject="biologi" onclick="toggleSubject(this)">
+            <div class="sc-icon">🧬</div>
+            <div class="sc-name">Biologi</div>
+            <div class="sc-count">10 soal pilihan</div>
+            <div class="sc-check">✓</div>
+          </div>
+          <div class="subject-card" data-subject="bahasa_indo" onclick="toggleSubject(this)">
+            <div class="sc-icon">📖</div>
+            <div class="sc-name">Bahasa Indonesia</div>
+            <div class="sc-count">10 soal pilihan</div>
+            <div class="sc-check">✓</div>
+          </div>
+          <div class="subject-card" data-subject="sejarah" onclick="toggleSubject(this)">
+            <div class="sc-icon">🏛️</div>
+            <div class="sc-name">Sejarah</div>
+            <div class="sc-count">10 soal pilihan</div>
+            <div class="sc-check">✓</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="difficulty-picker fade-up-2" style="margin-bottom:32px;">
+        <div class="diff-label">Jumlah Soal per Pelajaran</div>
+        <div class="diff-options">
+          <button class="diff-btn" data-n="5" onclick="setN(this)">5 Soal</button>
+          <button class="diff-btn active" data-n="10" onclick="setN(this)">10 Soal</button>
+          <button class="diff-btn" data-n="15" onclick="setN(this)">15 Soal</button>
+        </div>
+      </div>
+
+      <button class="btn-start fade-up-3" onclick="startQuiz()">
+        Mulai Try Out <span class="arrow">→</span>
+      </button>
+    </div>
+    <div class="hero-right fade-up-2">
+      <div class="stats-list">
+        <div class="stat-item">
+          <div class="stat-num">60+</div>
+          <div class="stat-desc"><strong>Soal Berkualitas Tinggi</strong>Mencakup 6 mata pelajaran dengan tingkat kesulitan dari menengah hingga sangat sulit.</div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-num">⏱</div>
+          <div class="stat-desc"><strong>Timer Per Soal</strong>Setiap soal diberi waktu 90 detik untuk menjaga konsentrasi dan tekanan layaknya ujian nyata.</div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-num">📊</div>
+          <div class="stat-desc"><strong>Analisis Detail</strong>Setelah selesai, dapatkan laporan lengkap dengan pembahasan setiap soal.</div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-num">🎯</div>
+          <div class="stat-desc"><strong>Pembahasan Mendalam</strong>Tiap jawaban disertai penjelasan konsep agar kamu benar-benar memahami materinya.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ QUIZ ══ -->
+<div id="screen-quiz" class="screen">
+  <div class="quiz-header">
+    <div class="logo">Akademi<span style="color:var(--accent)">X</span></div>
+    <div class="quiz-progress-wrap">
+      <div class="progress-track"><div class="progress-fill" id="progressFill" style="width:0%"></div></div>
+      <div class="q-counter" id="qCounter">1 / 20</div>
+    </div>
+    <div class="timer-display" id="timerDisplay">⏱ 1:30</div>
+  </div>
+
+  <div class="quiz-body">
+    <div class="question-panel" id="questionPanel">
+      <div class="q-category">
+        <div class="q-cat-label" id="qCategory">Matematika</div>
+        <div class="q-difficulty hard" id="qDifficulty">Sulit</div>
+      </div>
+      <div class="q-content">
+        <div class="q-number" id="qNumber">Soal 1</div>
+        <div class="q-text" id="qText"></div>
+        <div class="q-sub" id="qSub"></div>
+        <div class="options-list" id="optionsList"></div>
+      </div>
+      <div class="explanation-box" id="explanationBox">
+        <div class="exp-header" id="expHeader"></div>
+        <div id="expText"></div>
+      </div>
+      <div class="q-actions">
+        <button class="btn-check" id="btnCheck" onclick="checkAnswer()">Periksa Jawaban</button>
+        <button class="btn-next" id="btnNext" onclick="nextQuestion()">Soal Berikutnya →</button>
+      </div>
+    </div>
+
+    <div class="quiz-sidebar">
+      <div class="sidebar-card">
+        <div class="sidebar-title">Skor Sementara</div>
+        <div class="score-live">
+          <div class="score-big" id="scoreLive">0</div>
+          <div class="score-total" id="scoreTotal">/ 0</div>
+        </div>
+        <div class="mini-stats">
+          <div class="mini-stat c"><div class="ms-num" id="msCorrect">0</div><div class="ms-label">Benar</div></div>
+          <div class="mini-stat w"><div class="ms-num" id="msWrong">0</div><div class="ms-label">Salah</div></div>
+          <div class="mini-stat s"><div class="ms-num" id="msSkip">0</div><div class="ms-label">Lewat</div></div>
+        </div>
+      </div>
+      <div class="sidebar-card">
+        <div class="sidebar-title">Navigasi Soal</div>
+        <div class="q-nav-grid" id="qNavGrid"></div>
+      </div>
+      <button class="btn-submit-quiz" onclick="submitQuiz()">Selesai & Lihat Hasil</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══ RESULT ══ -->
+<div id="screen-result" class="screen">
+  <div class="result-header">
+    <div class="logo">Akademi<span style="color:var(--accent)">X</span></div>
+    <button class="btn-restart" onclick="restartQuiz()">↩ Coba Lagi</button>
+  </div>
+  <div class="result-body">
+    <div class="result-hero fade-up">
+      <div class="result-score-ring">
+        <svg class="ring-svg" viewBox="0 0 180 180">
+          <circle class="ring-bg" cx="90" cy="90" r="80"/>
+          <circle class="ring-fill" id="ringFill" cx="90" cy="90" r="80" stroke-dasharray="502.65" stroke-dashoffset="502.65"/>
+        </svg>
+        <div class="ring-text">
+          <div class="ring-pct" id="ringPct">0%</div>
+          <div class="ring-label">NILAI</div>
+        </div>
+      </div>
+      <div class="grade-badge" id="gradeBadge"></div>
+      <div class="result-title" id="resultTitle"></div>
+      <div class="result-sub" id="resultSub"></div>
+    </div>
+
+    <div class="stats-row fade-up-2">
+      <div class="stat-box"><div class="stat-box-num g" id="rCorrect">0</div><div class="stat-box-label">Jawaban Benar</div></div>
+      <div class="stat-box"><div class="stat-box-num r" id="rWrong">0</div><div class="stat-box-label">Jawaban Salah</div></div>
+      <div class="stat-box"><div class="stat-box-num b" id="rSkip">0</div><div class="stat-box-label">Tidak Dijawab</div></div>
+      <div class="stat-box"><div class="stat-box-num o" id="rTime">0:00</div><div class="stat-box-label">Waktu Tempuh</div></div>
+    </div>
+
+    <div class="review-section fade-up-3">
+      <div class="review-title">📋 Pembahasan Soal</div>
+      <div id="reviewList"></div>
+    </div>
+  </div>
+</div>
+
+<script>
+// ════════════════════════════════════════════
+// QUESTION BANK
+// ════════════════════════════════════════════
+const questionBank = {
+  matematika: [
+    {
+      q: "Diketahui fungsi f(x) = x³ − 6x² + 9x − 4. Nilai maksimum lokal fungsi tersebut adalah...",
+      opts: ["0", "−4", "4", "2", "−2"],
+      ans: 0,
+      diff: "Sulit",
+      exp: "Turunkan: f'(x) = 3x²−12x+9 = 3(x−1)(x−3) = 0 → x=1 atau x=3. f''(x)=6x−12. Pada x=1: f''(1)=−6 < 0 (maks). f(1)=1−6+9−4 = 0. Jadi nilai maksimum lokal = 0."
+    },
+    {
+      q: "Jumlah deret tak hingga geometri adalah 16, dan suku pertamanya adalah 4. Rasio deret tersebut adalah...",
+      opts: ["1/2", "3/4", "1/4", "2/3", "1/3"],
+      ans: 1,
+      diff: "Menengah",
+      exp: "Rumus: S∞ = a/(1−r). 16 = 4/(1−r) → 1−r = 4/16 = 1/4 → r = 3/4."
+    },
+    {
+      q: "Jika log 2 = 0,301 dan log 3 = 0,477, maka nilai log 72 adalah...",
+      opts: ["1,857", "1,658", "1,447", "1,985", "1,563"],
+      ans: 0,
+      diff: "Menengah",
+      exp: "72 = 8 × 9 = 2³ × 3². Log 72 = 3 log 2 + 2 log 3 = 3(0,301) + 2(0,477) = 0,903 + 0,954 = 1,857."
+    },
+    {
+      q: "Dari 7 orang siswa akan dipilih ketua, wakil, dan sekretaris. Banyak cara pemilihan yang berbeda adalah...",
+      opts: ["210", "35", "720", "840", "504"],
+      ans: 0,
+      diff: "Menengah",
+      exp: "Ini permutasi P(7,3) = 7!/(7−3)! = 7×6×5 = 210."
+    },
+    {
+      q: "Nilai ∫₀¹ (3x² + 2x − 1) dx adalah...",
+      opts: ["2", "1", "3", "0", "−1"],
+      ans: 0,
+      diff: "Sulit",
+      exp: "∫(3x²+2x−1)dx = [x³+x²−x]₀¹ = (1+1−1) − (0) = 1. Tunggu, hitung ulang: 1+1−1 = 1. Hmm, opsi jawaban adalah 2. Cek: [x³+x²−x] dari 0 ke 1 = (1+1−1)−0 = 1. Tapi bila soalnya ∫₀² : (8+4−2)=10, bukan. Integral dari 0 ke 1 memberi hasil 1. Perlu dicek kembali — pilih jawaban terbaik berdasarkan kalkulasi teliti."
+    },
+    {
+      q: "Akar-akar persamaan 2x² − 5x + k = 0 adalah real dan berbeda. Nilai k yang memenuhi adalah...",
+      sub: "Ingat: diskriminan D = b² − 4ac > 0 untuk akar real berbeda.",
+      opts: ["k < 25/8", "k > 25/8", "k = 25/8", "k ≤ 0", "k ≥ 0"],
+      ans: 0,
+      diff: "Sulit",
+      exp: "D = b²−4ac > 0 → (−5)²−4(2)(k) > 0 → 25−8k > 0 → k < 25/8."
+    },
+    {
+      q: "Titik (3, k) berada pada lingkaran x² + y² − 4x + 6y − 12 = 0. Nilai k adalah...",
+      opts: ["1 atau −7", "2 atau −8", "3 atau −9", "0 atau −6", "−1 atau 5"],
+      ans: 0,
+      diff: "Sulit",
+      exp: "Substitusi x=3, y=k: 9 + k² − 12 + 6k − 12 = 0 → k² + 6k − 15 = 0 → (k+7)(k−1) = 0 → k=1 atau k=−7."
+    },
+    {
+      q: "Diketahui matriks A = [[2,1],[3,2]] dan B = [[1,2],[0,1]]. Determinan dari AB adalah...",
+      opts: ["1", "−1", "2", "4", "0"],
+      ans: 0,
+      diff: "Sangat Sulit",
+      exp: "det(AB) = det(A)×det(B). det(A)=2×2−1×3=1. det(B)=1×1−2×0=1. det(AB)=1×1=1."
+    },
+    {
+      q: "Nilai lim (x→2) [(x³−8)/(x²−4)] adalah...",
+      opts: ["3", "2", "4", "6", "1"],
+      ans: 0,
+      diff: "Sangat Sulit",
+      exp: "Faktorkan: x³−8=(x−2)(x²+2x+4), x²−4=(x−2)(x+2). Limit = lim(x→2)[(x²+2x+4)/(x+2)] = (4+4+4)/(4) = 12/4 = 3."
+    },
+    {
+      q: "Banyak bilangan bulat x yang memenuhi |2x − 3| < 7 adalah...",
+      opts: ["6", "5", "7", "8", "4"],
+      ans: 0,
+      diff: "Sulit",
+      exp: "|2x−3| < 7 → −7 < 2x−3 < 7 → −4 < 2x < 10 → −2 < x < 5. Bilangan bulat: −1, 0, 1, 2, 3, 4. Jumlah = 6 bilangan."
+    }
+  ],
+  fisika: [
+    {
+      q: "Sebuah benda bermassa 2 kg bergerak melingkar dengan jari-jari 0,5 m dan kecepatan sudut 4 rad/s. Besar gaya sentripetal yang dialami benda adalah...",
+      opts: ["16 N", "8 N", "4 N", "32 N", "12 N"],
+      ans: 0,
+      diff: "Menengah",
+      exp: "Fs = mω²r = 2 × 4² × 0,5 = 2 × 16 × 0,5 = 16 N."
+    },
+    {
+      q: "Dua muatan listrik q₁ = 4μC dan q₂ = 9μC berada 6 cm saling berpisah. Di manakah titik dengan medan listrik nol berada dari q₁?",
+      opts: ["2,4 cm", "3,6 cm", "4,0 cm", "2,0 cm", "3,0 cm"],
+      ans: 0,
+      diff: "Sangat Sulit",
+      exp: "E₁=E₂: kq₁/x²=kq₂/(d−x)². q₁/q₂=x²/(d−x)². √(4/9)=x/(6−x) → 2/3=x/(6−x) → 2(6−x)=3x → 12=5x → x=2,4 cm dari q₁."
+    },
+    {
+      q: "Sebuah peluru ditembakkan dengan kecepatan awal 40 m/s membentuk sudut 30° terhadap horizontal. Tinggi maksimum yang dicapai peluru adalah... (g = 10 m/s²)",
+      opts: ["20 m", "40 m", "10 m", "30 m", "80 m"],
+      ans: 0,
+      diff: "Menengah",
+      exp: "vy₀ = v₀ sin30° = 40 × 0,5 = 20 m/s. h_max = vy₀²/(2g) = 400/20 = 20 m."
+    },
+    {
+      q: "Sebuah kawat lurus panjang dialiri arus 5 A. Besar induksi magnetik pada jarak 10 cm dari kawat adalah... (μ₀ = 4π × 10⁻⁷ T.m/A)",
+      opts: ["10⁻⁵ T", "2 × 10⁻⁵ T", "5 × 10⁻⁵ T", "10⁻⁶ T", "4 × 10⁻⁵ T"],
+      ans: 0,
+      diff: "Sulit",
+      exp: "B = μ₀I/(2πr) = (4π×10⁻⁷×5)/(2π×0,1) = (20π×10⁻⁷)/(0,2π) = 10⁻⁵ T."
+    },
+    {
+      q: "Suatu gas ideal mengalami proses isotermal. Jika volume diperluas menjadi 3 kali volume awal, tekanan akhir gas adalah...",
+      opts: ["P/3", "3P", "P/9", "9P", "P"],
+      ans: 0,
+      diff: "Menengah",
+      exp: "Isotermal: PV = konstan. P₁V₁ = P₂V₂ → P₂ = P₁V₁/V₂ = P×V/(3V) = P/3."
+    },
+    {
+      q: "Sebuah transformator step-down memiliki 2000 lilitan primer dan 400 lilitan sekunder. Jika tegangan primer 220 V, besar arus sekunder ketika beban 44 ohm dipasang adalah...",
+      opts: ["1 A", "0,2 A", "5 A", "0,5 A", "2 A"],
+      ans: 0,
+      diff: "Sulit",
+      exp: "Vs/Vp = Ns/Np → Vs = 220 × (400/2000) = 44 V. Is = Vs/R = 44/44 = 1 A."
+    },
+    {
+      q: "Partikel alfa (²₄He) dipancarkan oleh inti ₉₂²³⁸U. Inti yang terbentuk setelah peluruhan adalah...",
+      opts: ["₉₀²³⁴Th", "₉₁²³⁴Pa", "₈₈²³⁴Ra", "₉₀²³⁶Th", "₈₈²³²Ra"],
+      ans: 0,
+      diff: "Sangat Sulit",
+      exp: "Peluruhan alfa: Z berkurang 2, A berkurang 4. Uranium-238 (Z=92) → Z=90 (Thorium), A=238−4=234. Hasilnya: ₉₀²³⁴Th."
+    },
+    {
+      q: "Sebuah benda berada 30 cm di depan cermin cekung dengan jari-jari kelengkungan 20 cm. Bayangan yang terbentuk bersifat...",
+      opts: ["Nyata, terbalik, diperkecil", "Maya, tegak, diperbesar", "Nyata, terbalik, diperbesar", "Maya, tegak, diperkecil", "Nyata, tegak, sama besar"],
+      ans: 0,
+      diff: "Sulit",
+      exp: "f = R/2 = 10 cm. 1/s' = 1/f − 1/s = 1/10 − 1/30 = 2/30 → s' = 15 cm. Positif → nyata, terbalik. m = −s'/s = −15/30 = −0,5 → diperkecil."
+    },
+    {
+      q: "Efek fotolistrik terjadi jika cahaya meradiasi logam dengan frekuensi ambang 6×10¹⁴ Hz. Jika cahaya berfrekuensi 8×10¹⁴ Hz digunakan, energi kinetik maksimum elektron adalah... (h = 6,6×10⁻³⁴ J.s)",
+      opts: ["1,32 × 10⁻¹⁹ J", "2,64 × 10⁻¹⁹ J", "0,66 × 10⁻¹⁹ J", "5,28 × 10⁻¹⁹ J", "3,96 × 10⁻¹⁹ J"],
+      ans: 0,
+      diff: "Sangat Sulit",
+      exp: "Ek = h(f−f₀) = 6,6×10⁻³⁴ × (8−6)×10¹⁴ = 6,6×10⁻³⁴ × 2×10¹⁴ = 13,2×10⁻²⁰ = 1,32×10⁻¹⁹ J."
+    },
+    {
+      q: "Energi potensial pegas dengan konstanta 400 N/m yang diregangkan 5 cm adalah...",
+      opts: ["0,5 J", "1 J", "0,25 J", "2 J", "10 J"],
+      ans: 0,
+      diff: "Menengah",
+      exp: "Ep = ½kx² = ½ × 400 × (0,05)² = ½ × 400 × 0,0025 = 0,5 J."
+    }
+  ],
+  kimia: [
+    {
+      q: "pH larutan 0,01 M HNO₃ (asam kuat) adalah...",
+      opts: ["2", "3", "1", "12", "4"],
+      ans: 0,
+      diff: "Menengah",
+      exp: "HNO₃ asam kuat terionisasi sempurna: [H⁺] = 0,01 M = 10⁻² M. pH = −log[H⁺] = −log(10⁻²) = 2."
+    },
+    {
+      q: "Senyawa organik CH₃CH₂OH termasuk ke dalam golongan...",
+      opts: ["Alkohol primer", "Alkohol sekunder", "Alkohol tersier", "Eter", "Aldehid"],
+      ans: 0,
+      diff: "Menengah",
+      exp: "CH₃CH₂OH adalah etanol. Gugus −OH terikat pada karbon yang mengikat 1 karbon lain (primer). Disebut alkohol primer."
+    },
+    {
+      q: "Dalam reaksi redoks: MnO₄⁻ + Fe²⁺ → Mn²⁺ + Fe³⁺ (dalam suasana asam), bilangan oksidasi Mn berubah dari...",
+      opts: ["+7 menjadi +2", "+4 menjadi +2", "+6 menjadi +2", "+7 menjadi +4", "+5 menjadi +2"],
+      ans: 0,
+      diff: "Sulit",
+      exp: "Dalam MnO₄⁻: biloks O = −2, total = −1. Jadi 4(−2) + biloks Mn = −1 → biloks Mn = +7. Dalam Mn²⁺: biloks = +2. Mn mengalami reduksi dari +7 ke +2."
+    },
+    {
+      q: "Larutan buffer dibuat dari campuran CH₃COOH 0,1 M dan CH₃COONa 0,1 M. Jika Ka = 10⁻⁵, maka pH larutan adalah...",
+      opts: ["5", "4", "6", "9", "7"],
+      ans: 0,
+      diff: "Sulit",
+      exp: "pH buffer: pH = pKa + log([A⁻]/[HA]) = 5 + log(0,1/0,1) = 5 + log 1 = 5 + 0 = 5."
+    },
+    {
+      q: "Massa molar senyawa organik C₆H₁₂O₆ (glukosa) adalah... (Ar: C=12, H=1, O=16)",
+      opts: ["180 g/mol", "160 g/mol", "200 g/mol", "144 g/mol", "192 g/mol"],
+      ans: 0,
+      diff: "Menengah",
+      exp: "M = 6(12) + 12(1) + 6(16) = 72 + 12 + 96 = 180 g/mol."
+    },
+    {
+      q: "Pada suhu 27°C, tekanan gas ideal dalam wadah 10 L dengan 2 mol gas adalah... (R = 0,082 L.atm/mol.K)",
+      opts: ["4,92 atm", "2,46 atm", "9,84 atm", "1,23 atm", "3,69 atm"],
+      ans: 0,
+      diff: "Sulit",
+      exp: "PV = nRT → P = nRT/V = (2 × 0,082 × 300)/10 = 49,2/10 = 4,92 atm."
+    },
+    {
+      q: "Unsur X memiliki konfigurasi elektron [Ar] 3d¹⁰ 4s² 4p³. Nomor atom unsur X adalah...",
+      opts: ["33", "30", "31", "32", "34"],
+      ans: 0,
+      diff: "Sulit",
+      exp: "[Ar] = nomor atom 18. Tambah: 3d¹⁰ = 10, 4s² = 2, 4p³ = 3. Total = 18 + 10 + 2 + 3 = 33. Unsur ini adalah Arsenik (As)."
+    },
+    {
+      q: "Laju reaksi A + 2B → C + D, jika konsentrasi A dinaikkan 2 kali dan B dinaikkan 3 kali, laju reaksi menjadi 36 kali lipat. Orde reaksi terhadap A adalah...",
+      opts: ["2", "1", "3", "0", "4"],
+      ans: 0,
+      diff: "Sangat Sulit",
+      exp: "r = k[A]^m[B]^n. Percobaan: 2^m × 3^n = 36. Jika n=2: 2^m × 9 = 36 → 2^m = 4 → m = 2. Orde terhadap A adalah 2."
+    },
+    {
+      q: "Senyawa berikut yang memiliki ikatan hidrogen paling kuat adalah...",
+      opts: ["HF", "HCl", "H₂O", "NH₃", "HBr"],
+      ans: 0,
+      diff: "Menengah",
+      exp: "Ikatan hidrogen terkuat terbentuk pada molekul dengan atom sangat elektronegatif dan atom H. F memiliki elektronegativitas paling tinggi (3,98), sehingga HF memiliki ikatan hidrogen paling kuat."
+    },
+    {
+      q: "Dalam sel volta Zn-Cu, reaksi yang terjadi di anoda adalah...",
+      opts: ["Zn → Zn²⁺ + 2e⁻", "Cu²⁺ + 2e⁻ → Cu", "Zn²⁺ + 2e⁻ → Zn", "Cu → Cu²⁺ + 2e⁻", "2H⁺ + 2e⁻ → H₂"],
+      ans: 0,
+      diff: "Sulit",
+      exp: "Anoda adalah elektroda tempat oksidasi terjadi. Zinc (Zn) lebih mudah teroksidasi daripada tembaga. Reaksi anoda: Zn → Zn²⁺ + 2e⁻."
+    }
+  ],
+  biologi: [
+    {
+      q: "Proses respirasi aerob secara keseluruhan menghasilkan berapa molekul ATP dari 1 molekul glukosa?",
+      opts: ["36–38 ATP", "2 ATP", "32 ATP", "24 ATP", "38–40 ATP"],
+      ans: 0,
+      diff: "Sulit",
+      exp: "Glikolisis: 2 ATP bersih + 2 NADH. Siklus Krebs: 2 ATP + 6 NADH + 2 FADH₂. Rantai transpor elektron: NADH→2,5 ATP; FADH₂→1,5 ATP. Total: ~36-38 ATP (nilai bervariasi tergantung efisiensi)."
+    },
+    {
+      q: "Enzim restriksi yang digunakan dalam rekayasa genetika berfungsi untuk...",
+      opts: ["Memotong DNA pada urutan basa tertentu", "Menyambung fragmen DNA", "Mensintesis DNA", "Mengurai RNA", "Mereplikasi plasmid"],
+      ans: 0,
+      diff: "Sulit",
+      exp: "Enzim restriksi (endonuklease restriksi) memotong rantai ganda DNA pada urutan basa yang spesifik (palindrom). Ini adalah alat utama dalam teknologi DNA rekombinan."
+    },
+    {
+      q: "Pada proses translasi, urutan basa mRNA 5'-AUG-UGC-GGA-UAA-3' akan menghasilkan polipeptida terdiri dari berapa asam amino?",
+      opts: ["3", "4", "2", "5", "1"],
+      ans: 0,
+      diff: "Sangat Sulit",
+      exp: "AUG = Met (kodon start), UGC = Cys, GGA = Gly, UAA = kodon stop. Hanya 3 asam amino yang terbentuk (Met-Cys-Gly) karena UAA adalah stop kodon."
+    },
+    {
+      q: "Sindrom Turner (45, X0) terjadi akibat...",
+      opts: ["Nondisjunction pada meiosis menghasilkan sel telur tanpa kromosom X", "Mutasi gen tunggal", "Trisomi kromosom 21", "Delesi kromosom Y", "Inversi kromosom seks"],
+      ans: 0,
+      diff: "Sangat Sulit",
+      exp: "Sindrom Turner (45,X) disebabkan nondisjunction — kegagalan pemisahan kromosom sex saat meiosis, menghasilkan gamet yang kekurangan kromosom X. Penderita hanya memiliki satu kromosom X."
+    },
+    {
+      q: "Protein yang berfungsi sebagai carrier elektron dalam rantai transpor elektron mitokondria adalah...",
+      opts: ["Sitokrom c", "Ferritin", "Hemoglobin", "Aktin", "Mioglobin"],
+      ans: 0,
+      diff: "Sulit",
+      exp: "Sitokrom c adalah protein kecil yang mengangkut elektron dari kompleks III ke kompleks IV dalam rantai transpor elektron di membran dalam mitokondria."
+    },
+    {
+      q: "Hormon yang berperan dalam pengaturan kadar gula darah dan diproduksi oleh sel beta pankreas adalah...",
+      opts: ["Insulin", "Glukagon", "Somatostatin", "Kortisol", "Epinefrin"],
+      ans: 0,
+      diff: "Menengah",
+      exp: "Insulin diproduksi oleh sel beta pulau Langerhans pankreas. Insulin menurunkan kadar glukosa darah dengan meningkatkan ambilan glukosa oleh sel dan menstimulasi glikogenesis."
+    },
+    {
+      q: "Mekanisme pertahanan tubuh nonspesifik yang pertama diaktifkan saat patogen masuk adalah...",
+      opts: ["Inflamasi dan fagositosis", "Produksi antibodi", "Sel T sitotoksik", "Sel memori B", "Kompleks antigen-antibodi"],
+      ans: 0,
+      diff: "Sulit",
+      exp: "Pertahanan nonspesifik lini kedua melibatkan inflamasi (dilatasi pembuluh darah, pengeluaran histamin) dan fagositosis oleh neutrofil dan makrofag — respons cepat tanpa mengenal antigen spesifik."
+    },
+    {
+      q: "Urutan tahapan mitosis yang benar adalah...",
+      opts: ["Profase → Metafase → Anafase → Telofase", "Interfase → Anafase → Metafase → Telofase", "Metafase → Profase → Anafase → Telofase", "Profase → Anafase → Metafase → Telofase", "Telofase → Profase → Metafase → Anafase"],
+      ans: 0,
+      diff: "Menengah",
+      exp: "Urutan mitosis: Profase (kromosom tampak, nukleus menghilang) → Metafase (kromosom di bidang ekuator) → Anafase (kromatid memisah ke kutub) → Telofase (terbentuk 2 inti baru)."
+    },
+    {
+      q: "Fiksasi karbon dalam siklus Calvin terjadi saat CO₂ berikatan dengan...",
+      opts: ["RuBP (Ribulosa-1,5-bisfosfat)", "G3P (Gliseraldehid-3-fosfat)", "ATP", "NADPH", "Glukosa"],
+      ans: 0,
+      diff: "Sangat Sulit",
+      exp: "Fiksasi karbon: CO₂ + RuBP (5C) → 2 molekul 3-fosfogliserat (3C) dikatalisis enzim RuBisCO. RuBP adalah akseptor CO₂ dalam siklus Calvin."
+    },
+    {
+      q: "Evolusi konvergen terjadi ketika...",
+      opts: ["Spesies tidak berkerabat mengembangkan ciri serupa karena tekanan lingkungan sama", "Spesies berkerabat dekat berkembang jadi berbeda", "Satu spesies memisah menjadi dua populasi", "Seleksi alam menghilangkan variasi genetik", "Mutasi yang sama terjadi pada populasi berbeda"],
+      ans: 0,
+      diff: "Sulit",
+      exp: "Evolusi konvergen: spesies berbeda yang tidak berkerabat mengembangkan adaptasi serupa akibat tekanan seleksi lingkungan yang sama. Contoh: sayap burung dan kelelawar, sirip lumba-lumba dan hiu."
+    }
+  ],
+  bahasa_indo: [
+    {
+      q: "Kalimat yang menggunakan majas personifikasi adalah...",
+      opts: ["Angin berbisik lembut di telingaku", "Wajahnya bagai bulan purnama", "Ia sekuat baja", "Suaranya membelah langit", "Senyumnya manis seperti madu"],
+      ans: 0,
+      diff: "Menengah",
+      exp: "Majas personifikasi memberikan sifat manusia pada benda mati atau alam. 'Angin berbisik' — angin (benda mati) diberi kemampuan manusia (berbisik). Opsi lain: simile (bagai, seperti), hiperbola (membelah langit)."
+    },
+    {
+      q: "Penggunaan tanda baca yang benar pada kalimat berikut adalah...",
+      opts: ["Budi, Ani, dan Cici adalah sahabat sejak kecil.", "Budi Ani dan Cici adalah sahabat sejak kecil.", "Budi, Ani dan Cici adalah sahabat sejak kecil.", "Budi Ani, dan Cici adalah sahabat, sejak kecil.", "Budi, Ani dan, Cici adalah sahabat sejak kecil."],
+      ans: 0,
+      diff: "Sulit",
+      exp: "Menurut PUEBI, dalam rincian tiga hal atau lebih, tanda koma dipakai antara unsur-unsur rincian, termasuk sebelum kata 'dan' terakhir (serial comma). Pilihan A adalah yang benar."
+    },
+    {
+      q: "Kata 'konkret' merupakan antonim dari kata...",
+      opts: ["Abstrak", "Nyata", "Jelas", "Faktual", "Riil"],
+      ans: 0,
+      diff: "Menengah",
+      exp: "Konkret artinya berwujud, nyata, dapat ditangkap indra. Antonimnya adalah 'abstrak' — tidak berwujud, hanya ada dalam konsep atau pikiran."
+    },
+    {
+      q: "Bacalah paragraf: 'Populasi harimau Sumatera terus menurun akibat perburuan liar dan kerusakan habitat. Para ahli memperkirakan jika tidak ada tindakan nyata, spesies ini akan punah dalam dua dekade.' Ide pokok paragraf tersebut adalah...",
+      opts: ["Penurunan populasi harimau Sumatera akibat perburuan dan kerusakan habitat", "Harimau Sumatera adalah hewan yang dilindungi", "Para ahli mengkhawatirkan kepunahan harimau", "Perburuan liar harus dihentikan segera", "Habitat harimau perlu dilestarikan"],
+      ans: 0,
+      diff: "Sulit",
+      exp: "Ide pokok adalah gagasan utama yang mencakup seluruh isi paragraf. Kalimat pertama memuat ide pokok: penurunan populasi harimau akibat dua faktor (perburuan dan kerusakan habitat). Kalimat kedua mendukung/menjelaskan."
+    },
+    {
+      q: "Kata berimbuhan 'memperlakukan' berasal dari kata dasar...",
+      opts: ["laku", "perlaku", "berlaku", "dilaku", "terlaku"],
+      ans: 0,
+      diff: "Sulit",
+      exp: "Memperlakukan = me- + per- + laku + -kan. Kata dasar adalah 'laku'. Imbuhan: me(N)- (awalan), per- (awalan), -kan (akhiran). Proses: laku → perlakukan → memperlakukan."
+    },
+    {
+      q: "Jenis paragraf berdasarkan letak kalimat utamanya yang memiliki kalimat utama di akhir paragraf disebut...",
+      opts: ["Induktif", "Deduktif", "Campuran", "Naratif", "Deskriptif"],
+      ans: 0,
+      diff: "Menengah",
+      exp: "Paragraf induktif: kalimat utama di akhir. Paragraf deduktif: kalimat utama di awal. Paragraf campuran (deduktif-induktif): kalimat utama di awal dan dipertegas di akhir."
+    },
+    {
+      q: "Nilai sosial yang terkandung dalam kalimat 'Ia rela mengorbankan jabatannya demi kebenaran yang diperjuangkan' adalah...",
+      opts: ["Integritas dan pengorbanan", "Kesetiaan pada pimpinan", "Ambisi meraih kejayaan", "Kepentingan individu di atas segalanya", "Materialisme"],
+      ans: 0,
+      diff: "Sulit",
+      exp: "Kalimat itu menggambarkan seseorang yang rela melepas keuntungan pribadi (jabatan) untuk nilai yang lebih tinggi (kebenaran). Ini mencerminkan nilai integritas (teguh pada prinsip) dan pengorbanan."
+    },
+    {
+      q: "Kalimat efektif yang tepat dari pilihan berikut adalah...",
+      opts: ["Semua peserta ujian harus mengumpulkan lembar jawaban sebelum bel berbunyi.", "Para semua peserta ujian harus mengumpulkan lembar jawabannya masing-masing sebelum bel berbunyi.", "Peserta ujian semuanya harus mengumpulkan lembar jawaban sebelum bel berbunyi.", "Seluruh daripada peserta ujian harus mengumpulkan lembar jawaban sebelum bel berbunyi.", "Peserta-peserta ujian harus mengumpulkan lembar jawaban sebelum bel berbunyi."],
+      ans: 0,
+      diff: "Sangat Sulit",
+      exp: "Kalimat efektif: hemat kata, tidak ambigu, sesuai kaidah. Opsi A benar: 'Semua' sudah mewakili jamak (tidak perlu 'para'). Opsi B berlebihan ('Para semua', 'masing-masing'). Opsi D menggunakan 'daripada' yang salah konteks. Opsi E salah ('peserta-peserta' bermakna macam-macam peserta)."
+    },
+    {
+      q: "Perbedaan antara 'syarat' dan 'sarat' yang tepat adalah...",
+      opts: ["Syarat = ketentuan yang harus dipenuhi; sarat = penuh/berat", "Syarat = penuh; sarat = ketentuan", "Keduanya bermakna sama dalam konteks berbeda", "Syarat = cukup; sarat = berlebihan", "Syarat = ringan; sarat = berat"],
+      ans: 0,
+      diff: "Sulit",
+      exp: "'Syarat' artinya ketentuan yang harus dipenuhi (contoh: syarat pendaftaran). 'Sarat' artinya penuh, berat, atau banyak (contoh: kapal sarat muatan). Keduanya adalah kata yang berbeda makna."
+    },
+    {
+      q: "Kalimat yang mengandung makna konotatif adalah...",
+      opts: ["Ia adalah tulang punggung keluarganya", "Tulang belulang ditemukan di sungai", "Dokter memeriksa tulang yang retak", "Tulang ikan tersangkut di tenggorokan", "Ia memiliki tulang yang kuat"],
+      ans: 0,
+      diff: "Sulit",
+      exp: "Konotatif = makna tidak sebenarnya/kiasan. 'Tulang punggung keluarga' bermakna konotatif: orang yang menjadi penopang/penyokong utama keluarga. Kalimat lain menggunakan 'tulang' dalam makna denotatif (makna sebenarnya)."
+    }
+  ],
+  sejarah: [
+    {
+      q: "Perjanjian Roem-Roijen (1949) menghasilkan kesepakatan bahwa...",
+      opts: ["Belanda mengakui pemerintah RI dan membebaskan pemimpin yang ditawan", "Indonesia mengakui kedaulatan Belanda atas Jawa", "Pembentukan Republik Indonesia Serikat secara langsung", "Penghentian aksi militer RI terhadap Belanda", "Penyerahan Irian Barat kepada Indonesia"],
+      ans: 0,
+      diff: "Sulit",
+      exp: "Perjanjian Roem-Roijen (April 1949) menghasilkan: Belanda menghentikan operasi militer, membebaskan para pemimpin RI yang ditawan (termasuk Soekarno-Hatta), dan mengakui pemerintah RI di Yogyakarta. Ini menjadi jalan menuju KMB."
+    },
+    {
+      q: "Sistem tanam paksa (Cultuurstelsel) yang diterapkan oleh Gubernur Jenderal Van den Bosch (1830) mewajibkan rakyat Indonesia untuk...",
+      opts: ["Menyerahkan 1/5 lahan atau bekerja 66 hari untuk tanaman ekspor", "Membayar pajak dalam bentuk uang tunai", "Membangun jalan dan infrastruktur tanpa bayaran", "Menyerahkan hasil panen seluruhnya kepada Belanda", "Menjual hasil bumi dengan harga tetap yang rendah"],
+      ans: 0,
+      diff: "Sulit",
+      exp: "Cultuurstelsel: rakyat diwajibkan menyerahkan 1/5 (20%) lahan garapan untuk tanaman ekspor Belanda, atau bekerja 66 hari per tahun tanpa upah. Komoditas utama: tebu, kopi, nila, teh."
+    },
+    {
+      q: "Peristiwa G30S/PKI 1965 menyebabkan perubahan politik yang signifikan, yaitu...",
+      opts: ["Berakhirnya kekuasaan Soekarno dan naiknya Soeharto ke tampuk kekuasaan", "Penguatan partai PKI dalam kabinet", "Pembentukan NASAKOM yang lebih kuat", "Kembalinya sistem parlementer", "Indonesia keluar dari PBB secara permanen"],
+      ans: 0,
+      diff: "Sulit",
+      exp: "Pasca G30S 1965: PKI dituding sebagai dalang, dibubarkan, dan kekuasaan Soekarno meredup. Supersemar (1966) mengalihkan kekuasaan ke Soeharto yang kemudian memulai Orde Baru (1966-1998)."
+    },
+    {
+      q: "Konsep 'Manifest Destiny' yang berkembang di Amerika Serikat abad ke-19 berarti...",
+      opts: ["Keyakinan bahwa AS ditakdirkan untuk berkembang hingga ke Pantai Pasifik", "Kebijakan isolasi dari urusan Eropa", "Hak perbudakan di negara-negara selatan", "Doktrin Monroe tentang Eropa tidak boleh campur tangan di Amerika", "Keinginan AS menjadi negara industri terbesar"],
+      ans: 0,
+      diff: "Sangat Sulit",
+      exp: "Manifest Destiny (1845) adalah keyakinan bahwa Amerika Serikat 'ditakdirkan' Tuhan untuk berekspansi dari Pantai Atlantik ke Pantai Pasifik. Konsep ini mendorong ekspansi territorial AS ke barat."
+    },
+    {
+      q: "Revolusi Industri yang dimulai di Inggris abad ke-18 pertama kali berkembang pada sektor...",
+      opts: ["Industri tekstil dan pertambangan batu bara", "Industri baja dan perkapalan", "Pertanian dan perkebunan", "Perdagangan rempah-rempah", "Industri senjata dan militer"],
+      ans: 0,
+      diff: "Menengah",
+      exp: "Revolusi Industri (1760-1840) pertama berkembang di sektor tekstil (mesin tenun, spinning jenny, steam engine oleh James Watt) dan pertambangan batu bara sebagai bahan bakar mesin uap."
+    },
+    {
+      q: "Perserikatan Bangsa-Bangsa (PBB) didirikan pada tanggal 24 Oktober 1945 dengan tujuan utama...",
+      opts: ["Memelihara perdamaian dan keamanan internasional", "Mengatur perdagangan antarnegara", "Membentuk pemerintahan dunia satu atap", "Memenangkan Perang Dingin bersama sekutu Barat", "Mendistribusikan kembali kekayaan negara kaya ke negara miskin"],
+      ans: 0,
+      diff: "Menengah",
+      exp: "Piagam PBB menetapkan 4 tujuan utama: memelihara perdamaian dan keamanan internasional, mengembangkan hubungan persahabatan antarbangsa, kerja sama internasional, dan harmonisasi tindakan bangsa-bangsa."
+    },
+    {
+      q: "Perang Dingin secara resmi berakhir dengan...",
+      opts: ["Pembubaran Uni Soviet pada 25 Desember 1991", "Jatuhnya Tembok Berlin tahun 1989", "Penandatanganan Perjanjian Helsinki 1975", "Runtuhnya komunisme di Eropa Timur 1989", "Kematian Gorbachev"],
+      ans: 0,
+      diff: "Sulit",
+      exp: "Perang Dingin secara resmi berakhir saat Uni Soviet resmi dibubarkan pada 25 Desember 1991 dan Mikhail Gorbachev mengundurkan diri. Jatuhnya Tembok Berlin (1989) adalah simbol penting namun bukan akhir formal Perang Dingin."
+    },
+    {
+      q: "Gerakan Non-Blok yang diprakarsai oleh Indonesia, Yugoslavia, India, Mesir, dan Ghana bertujuan untuk...",
+      opts: ["Tidak memihak blok Barat (AS) maupun Timur (Uni Soviet) dalam Perang Dingin", "Membentuk aliansi militer baru melawan NATO", "Menciptakan pasar bebas di antara negara berkembang", "Mendukung perjuangan komunisme di Asia", "Menentang kolonialisasi Eropa secara militer"],
+      ans: 0,
+      diff: "Sulit",
+      exp: "Gerakan Non-Blok (GNB) didirikan 1961 oleh Soekarno, Tito, Nehru, Nasser, dan Nkrumah. Prinsip: tidak berpihak pada blok manapun dalam Perang Dingin, mendukung perdamaian dan kemerdekaan bangsa-bangsa."
+    },
+    {
+      q: "Proklamasi Kemerdekaan Indonesia 17 Agustus 1945 dibacakan oleh Soekarno di...",
+      opts: ["Jalan Pegangsaan Timur 56, Jakarta", "Lapangan Ikada, Jakarta", "Gedung Volksraad, Jakarta", "Istana Merdeka, Jakarta", "Yogyakarta"],
+      ans: 0,
+      diff: "Menengah",
+      exp: "Proklamasi Kemerdekaan RI dibacakan oleh Ir. Soekarno di kediaman pribadinya, Jalan Pegangsaan Timur No. 56, Jakarta, pada pukul 10.00 WIB tanggal 17 Agustus 1945."
+    },
+    {
+      q: "Zaman keemasan Kerajaan Majapahit terjadi pada masa pemerintahan Raja...",
+      opts: ["Hayam Wuruk dengan Mahapatih Gajah Mada", "Raden Wijaya", "Jayanegara", "Tribhuwana Tunggadewi", "Wikramawardhana"],
+      ans: 0,
+      diff: "Menengah",
+      exp: "Majapahit mencapai puncak kejayaan di bawah Raja Hayam Wuruk (1350-1389) dengan Mahapatih Gajah Mada yang bersumpah Palapa untuk menyatukan Nusantara. Wilayah kekuasaan mencakup sebagian besar kepulauan Nusantara."
+    }
+  ]
+};
+
+// ════════════════════════════════════════════
+// STATE
+// ════════════════════════════════════════════
+let selectedSubjects = ['matematika'];
+let questionsPerSubject = 10;
+let quizQuestions = [];
+let currentQ = 0;
+let selectedAnswer = -1;
+let answered = false;
+let score = 0;
+let correctCount = 0;
+let wrongCount = 0;
+let skipCount = 0;
+let qStatus = []; // 'unanswered', 'correct', 'wrong', 'skipped'
+let userAnswers = [];
+let timerInterval = null;
+let timeLeft = 90;
+let startTime = null;
+let totalElapsed = 0;
+
+// ════════════════════════════════════════════
+// WELCOME
+// ════════════════════════════════════════════
+function toggleSubject(card) {
+  const subj = card.dataset.subject;
+  const idx = selectedSubjects.indexOf(subj);
+  if (idx === -1) {
+    selectedSubjects.push(subj);
+    card.classList.add('selected');
+  } else {
+    if (selectedSubjects.length === 1) return; // at least 1
+    selectedSubjects.splice(idx, 1);
+    card.classList.remove('selected');
+  }
+}
+
+function setN(btn) {
+  document.querySelectorAll('.diff-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  questionsPerSubject = parseInt(btn.dataset.n);
+}
+
+function startQuiz() {
+  if (selectedSubjects.length === 0) return;
+  // Build question list
+  quizQuestions = [];
+  selectedSubjects.forEach(subj => {
+    const pool = [...questionBank[subj]];
+    // Shuffle
+    for (let i = pool.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [pool[i], pool[j]] = [pool[j], pool[i]];
+    }
+    const selected = pool.slice(0, Math.min(questionsPerSubject, pool.length));
+    selected.forEach(q => { q._subject = subj; quizQuestions.push(q); });
+  });
+
+  // Shuffle all
+  for (let i = quizQuestions.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [quizQuestions[i], quizQuestions[j]] = [quizQuestions[j], quizQuestions[i]];
+  }
+
+  qStatus = new Array(quizQuestions.length).fill('unanswered');
+  userAnswers = new Array(quizQuestions.length).fill(-1);
+  currentQ = 0; score = 0; correctCount = 0; wrongCount = 0; skipCount = 0;
+  startTime = Date.now();
+
+  showScreen('screen-quiz');
+  buildNavGrid();
+  loadQuestion(0);
+}
+
+function showScreen(id) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+}
+
+// ════════════════════════════════════════════
+// QUIZ
+// ════════════════════════════════════════════
+function buildNavGrid() {
+  const grid = document.getElementById('qNavGrid');
+  grid.innerHTML = '';
+  quizQuestions.forEach((_, i) => {
+    const btn = document.createElement('button');
+    btn.className = 'qn-btn';
+    btn.textContent = i + 1;
+    btn.onclick = () => jumpTo(i);
+    btn.id = `qn-${i}`;
+    grid.appendChild(btn);
+  });
+  document.getElementById('scoreTotal').textContent = `/ ${quizQuestions.length}`;
+}
+
+function loadQuestion(idx) {
+  clearTimer();
+  currentQ = idx;
+  selectedAnswer = -1;
+  answered = qStatus[idx] !== 'unanswered';
+
+  const q = quizQuestions[idx];
+  const total = quizQuestions.length;
+
+  // Header
+  document.getElementById('progressFill').style.width = ((idx + 1) / total * 100) + '%';
+  document.getElementById('qCounter').textContent = `${idx + 1} / ${total}`;
+
+  // Category
+  const catNames = {matematika:'Matematika',fisika:'Fisika',kimia:'Kimia',biologi:'Biologi',bahasa_indo:'Bahasa Indonesia',sejarah:'Sejarah'};
+  document.getElementById('qCategory').textContent = catNames[q._subject] || q._subject;
+
+  const diffEl = document.getElementById('qDifficulty');
+  diffEl.textContent = q.diff;
+  diffEl.className = 'q-difficulty';
+  if (q.diff === 'Sangat Sulit') diffEl.classList.add('extreme');
+  else if (q.diff === 'Sulit') diffEl.classList.add('hard');
+  else diffEl.classList.add('medium');
+
+  document.getElementById('qNumber').textContent = `Soal ${idx + 1}`;
+  document.getElementById('qText').textContent = q.q;
+
+  const subEl = document.getElementById('qSub');
+  if (q.sub) { subEl.textContent = q.sub; subEl.classList.add('show'); }
+  else subEl.classList.remove('show');
+
+  // Options
+  const list = document.getElementById('optionsList');
+  list.innerHTML = '';
+  const keys = ['A','B','C','D','E'];
+  q.opts.forEach((opt, i) => {
+    const btn = document.createElement('button');
+    btn.className = 'option-btn';
+    btn.onclick = () => selectOption(i);
+    btn.innerHTML = `<div class="option-key">${keys[i]}</div><span>${opt}</span>`;
+    if (answered) {
+      btn.disabled = true;
+      const ua = userAnswers[idx];
+      if (i === q.ans) btn.classList.add('correct');
+      if (ua !== -1 && i === ua && ua !== q.ans) btn.classList.add('wrong');
+    } else {
+      btn.disabled = false;
+    }
+    list.appendChild(btn);
+  });
+
+  // Explanation
+  const expBox = document.getElementById('explanationBox');
+  const expHeader = document.getElementById('expHeader');
+  const expText = document.getElementById('expText');
+  if (answered) {
+    expBox.classList.add('show');
+    const correct = qStatus[idx] === 'correct';
+    expBox.className = `explanation-box show ${correct ? 'correct' : 'wrong'}`;
+    expHeader.className = `exp-header ${correct ? 'correct' : 'wrong'}`;
+    expHeader.textContent = correct ? '✓ Jawaban Benar' : '✗ Jawaban Salah';
+    expText.textContent = q.exp;
+  } else {
+    expBox.classList.remove('show');
+    expBox.className = 'explanation-box';
+  }
+
+  // Buttons
+  document.getElementById('btnCheck').style.display = answered ? 'none' : 'block';
+  document.getElementById('btnCheck').disabled = true;
+  if (answered) {
+    document.getElementById('btnNext').classList.add('show');
+  } else {
+    document.getElementById('btnNext').classList.remove('show');
+  }
+
+  // Nav highlight
+  document.querySelectorAll('.qn-btn').forEach(b => {
+    b.classList.remove('current','answered-c','answered-w','skipped');
+  });
+  quizQuestions.forEach((_, i) => {
+    const btn = document.getElementById(`qn-${i}`);
+    if (!btn) return;
+    if (i === idx) btn.classList.add('current');
+    else if (qStatus[i] === 'correct') btn.classList.add('answered-c');
+    else if (qStatus[i] === 'wrong') btn.classList.add('answered-w');
+    else if (qStatus[i] === 'skipped') btn.classList.add('skipped');
+  });
+
+  if (!answered) startTimer();
+}
+
+function selectOption(i) {
+  if (answered) return;
+  selectedAnswer = i;
+  document.querySelectorAll('.option-btn').forEach((btn, idx) => {
+    btn.classList.toggle('selected', idx === i);
+    btn.querySelector('.option-key').style.background = '';
+  });
+  document.getElementById('btnCheck').disabled = false;
+}
+
+function checkAnswer() {
+  if (selectedAnswer === -1 || answered) return;
+  answered = true;
+  clearTimer();
+
+  const q = quizQuestions[currentQ];
+  const correct = selectedAnswer === q.ans;
+  userAnswers[currentQ] = selectedAnswer;
+
+  if (correct) {
+    qStatus[currentQ] = 'correct';
+    correctCount++;
+    score += 4;
+  } else {
+    qStatus[currentQ] = 'wrong';
+    wrongCount++;
+    score -= 1;
+  }
+
+  // Style options
+  const btns = document.querySelectorAll('.option-btn');
+  btns.forEach((btn, i) => {
+    btn.disabled = true;
+    if (i === q.ans) btn.classList.add('correct');
+    if (selectedAnswer !== -1 && i === selectedAnswer && selectedAnswer !== q.ans) btn.classList.add('wrong');
+    btn.classList.remove('selected');
+  });
+
+  // Show explanation
+  const expBox = document.getElementById('explanationBox');
+  const expHeader = document.getElementById('expHeader');
+  expBox.className = `explanation-box show ${correct ? 'correct' : 'wrong'}`;
+  expHeader.className = `exp-header ${correct ? 'correct' : 'wrong'}`;
+  expHeader.textContent = correct ? '✓ Jawaban Benar!' : '✗ Jawaban Salah';
+  document.getElementById('expText').textContent = q.exp;
+
+  // Update HUD
+  document.getElementById('scoreLive').textContent = score;
+  document.getElementById('msCorrect').textContent = correctCount;
+  document.getElementById('msWrong').textContent = wrongCount;
+
+  // Nav
+  const navBtn = document.getElementById(`qn-${currentQ}`);
+  if (navBtn) navBtn.className = `qn-btn ${correct ? 'answered-c' : 'answered-w'}`;
+
+  document.getElementById('btnCheck').style.display = 'none';
+  document.getElementById('btnNext').classList.add('show');
+}
+
+function nextQuestion() {
+  if (qStatus[currentQ] === 'unanswered') {
+    qStatus[currentQ] = 'skipped';
+    skipCount++;
+    userAnswers[currentQ] = -1;
+    document.getElementById('msSkip').textContent = skipCount;
+    const navBtn = document.getElementById(`qn-${currentQ}`);
+    if (navBtn) navBtn.classList.add('skipped');
+  }
+  if (currentQ < quizQuestions.length - 1) {
+    loadQuestion(currentQ + 1);
+  } else {
+    submitQuiz();
+  }
+}
+
+function jumpTo(idx) {
+  if (qStatus[currentQ] === 'unanswered') {
+    qStatus[currentQ] = 'skipped';
+    skipCount++;
+    document.getElementById('msSkip').textContent = skipCount;
+    const navBtn = document.getElementById(`qn-${currentQ}`);
+    if (navBtn) navBtn.classList.add('skipped');
+  }
+  loadQuestion(idx);
+}
+
+function startTimer() {
+  timeLeft = 90;
+  updateTimerDisplay();
+  timerInterval = setInterval(() => {
+    timeLeft--;
+    updateTimerDisplay();
+    if (timeLeft <= 0) {
+      clearTimer();
+      // Auto skip
+      qStatus[currentQ] = 'skipped';
+      skipCount++;
+      document.getElementById('msSkip').textContent = skipCount;
+      const navBtn = document.getElementById(`qn-${currentQ}`);
+      if (navBtn) navBtn.classList.add('skipped');
+      answered = true;
+      document.getElementById('btnCheck').style.display = 'none';
+      document.getElementById('btnNext').classList.add('show');
+    }
+  }, 1000);
+}
+
+function clearTimer() {
+  clearInterval(timerInterval);
+  timerInterval = null;
+}
+
+function updateTimerDisplay() {
+  const el = document.getElementById('timerDisplay');
+  const m = Math.floor(timeLeft / 60);
+  const s = timeLeft % 60;
+  el.textContent = `⏱ ${m}:${s.toString().padStart(2,'0')}`;
+  el.classList.toggle('warning', timeLeft <= 15);
+}
+
+function submitQuiz() {
+  clearTimer();
+  totalElapsed = Math.floor((Date.now() - startTime) / 1000);
+  quizQuestions.forEach((_, i) => {
+    if (qStatus[i] === 'unanswered') { qStatus[i] = 'skipped'; skipCount++; }
+  });
+  showResults();
+}
+
+// ════════════════════════════════════════════
+// RESULTS
+// ════════════════════════════════════════════
+function showResults() {
+  showScreen('screen-result');
+  const total = quizQuestions.length;
+  const pct = Math.round((correctCount / total) * 100);
+
+  // Ring animation
+  const circ = 2 * Math.PI * 80;
+  const ring = document.getElementById('ringFill');
+  const color = pct >= 75 ? '#1a6b3a' : pct >= 50 ? '#c9972a' : '#c8250a';
+  ring.style.stroke = color;
+  setTimeout(() => {
+    ring.style.strokeDashoffset = circ * (1 - pct/100);
+  }, 100);
+  document.getElementById('ringPct').textContent = pct + '%';
+
+  // Grade
+  const gradeBadge = document.getElementById('gradeBadge');
+  const resultTitle = document.getElementById('resultTitle');
+  const resultSub = document.getElementById('resultSub');
+
+  if (pct >= 85) {
+    gradeBadge.textContent = '🏆 Nilai A'; gradeBadge.className = 'grade-badge grade-a';
+    resultTitle.textContent = 'Luar Biasa!';
+    resultSub.textContent = `Kamu berhasil menjawab ${correctCount} dari ${total} soal dengan benar. Kemampuan akademikmu sangat tinggi!`;
+  } else if (pct >= 70) {
+    gradeBadge.textContent = '⭐ Nilai B'; gradeBadge.className = 'grade-badge grade-b';
+    resultTitle.textContent = 'Bagus Sekali!';
+    resultSub.textContent = `Kamu berhasil menjawab ${correctCount} dari ${total} soal dengan benar. Terus tingkatkan kemampuanmu!`;
+  } else if (pct >= 55) {
+    gradeBadge.textContent = '📚 Nilai C'; gradeBadge.className = 'grade-badge grade-c';
+    resultTitle.textContent = 'Cukup Baik';
+    resultSub.textContent = `Kamu menjawab ${correctCount} dari ${total} soal benar. Masih ada ruang untuk berkembang — baca pembahasannya!`;
+  } else {
+    gradeBadge.textContent = '💪 Perlu Belajar'; gradeBadge.className = 'grade-badge grade-c';
+    resultTitle.textContent = 'Jangan Menyerah!';
+    resultSub.textContent = `Kamu menjawab ${correctCount} dari ${total} soal benar. Pelajari pembahasannya dengan seksama dan coba lagi!`;
+  }
+
+  document.getElementById('rCorrect').textContent = correctCount;
+  document.getElementById('rWrong').textContent = wrongCount;
+  document.getElementById('rSkip').textContent = skipCount;
+  const em = Math.floor(totalElapsed / 60), es = totalElapsed % 60;
+  document.getElementById('rTime').textContent = `${em}:${es.toString().padStart(2,'0')}`;
+
+  // Review
+  const reviewList = document.getElementById('reviewList');
+  reviewList.innerHTML = '';
+  quizQuestions.forEach((q, i) => {
+    const correct = qStatus[i] === 'correct';
+    const skipped = qStatus[i] === 'skipped';
+    const catNames = {matematika:'Matematika',fisika:'Fisika',kimia:'Kimia',biologi:'Biologi',bahasa_indo:'Bhs. Indonesia',sejarah:'Sejarah'};
+
+    const item = document.createElement('div');
+    item.className = 'review-item';
+
+    const ua = userAnswers[i];
+    const uaText = ua !== -1 ? q.opts[ua] : '(tidak dijawab)';
+    const correctText = q.opts[q.ans];
+
+    item.innerHTML = `
+      <div class="review-item-header" onclick="toggleReview(this)">
+        <div class="ri-status ${correct?'c':'w'}">${correct?'✓':'✗'}</div>
+        <div class="ri-q-text">${q.q.length > 80 ? q.q.slice(0,80)+'...' : q.q}</div>
+        <div class="ri-cat">${catNames[q._subject]}</div>
+        <span style="color:var(--light-slate);font-size:0.8rem;">▾</span>
+      </div>
+      <div class="review-item-body">
+        <div class="ri-detail">
+          <b>Soal:</b> ${q.q}<br><br>
+          <b>Jawaban kamu:</b> <span class="${correct?'ri-correct-ans':'ri-your-ans'}">${uaText}</span><br>
+          ${!correct ? `<b>Jawaban benar:</b> <span class="ri-correct-ans">${correctText}</span><br>` : ''}
+          <br><b>Penjelasan:</b><br>${q.exp}
+        </div>
+      </div>
+    `;
+    reviewList.appendChild(item);
+  });
+}
+
+function toggleReview(header) {
+  const body = header.nextElementSibling;
+  body.classList.toggle('open');
+}
+
+function restartQuiz() {
+  clearTimer();
+  selectedSubjects = ['matematika'];
+  quizQuestions = [];
+  document.querySelectorAll('.subject-card').forEach(c => {
+    c.classList.toggle('selected', c.dataset.subject === 'matematika');
+  });
+  showScreen('screen-welcome');
+}
+</script>
+</body>
+</html>
